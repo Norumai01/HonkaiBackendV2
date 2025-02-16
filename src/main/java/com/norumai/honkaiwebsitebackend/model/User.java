@@ -21,10 +21,13 @@ public class User {
     @Column(name = "Email", nullable = false, unique = true, length = 320)
     private String email;
 
-    // Ignore password in JSON output. Allows the password to be read from inputs.
+    // Ignore password in JSON output.
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "Password", nullable = false, length = 75)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @Column(length = 500)
     private String bio;
@@ -32,7 +35,7 @@ public class User {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Creating an account, will automatically set to the local time.
+    // Create on new account.
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
