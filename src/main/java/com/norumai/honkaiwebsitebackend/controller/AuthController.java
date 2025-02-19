@@ -1,5 +1,7 @@
 package com.norumai.honkaiwebsitebackend.controller;
 
+import com.norumai.honkaiwebsitebackend.dto.LoginRequest;
+import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
 import com.norumai.honkaiwebsitebackend.service.UserService;
 import com.norumai.honkaiwebsitebackend.model.User;
 import jakarta.validation.Valid;
@@ -40,16 +42,16 @@ public class AuthController {
     }
 
     @PostMapping("/createUser")
-    public ResponseEntity<?> createUser(@RequestBody User user) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            if (userService.findByEmail(user.getEmail()).isPresent()) {
+            if (userService.findByEmail(registerRequest.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest().body("User with this email already exists.");
             }
-            if (userService.findByUsername(user.getUsername()).isPresent()) {
+            if (userService.findByUsername(registerRequest.getUsername()).isPresent()) {
                 return ResponseEntity.badRequest().body("User with this username already exists.");
             }
 
-            User savedUser = userService.createUser(user);
+            User savedUser = userService.createUser(registerRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         }
         catch (Exception e) {
@@ -58,13 +60,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody User userRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            attemptToAuthenticate(userRequest.getEmail(), userRequest.getUsername(), userRequest.getPassword());
+            attemptToAuthenticate(loginRequest.getUserInput(), loginRequest.getPassword());
 
             // Intended user data is obtained and not the input credential with missing data.
-            User user = userService.findByEmail(userRequest.getEmail())
-                    .or(() -> userService.findByUsername(userRequest.getUsername()))
+            User user = userService.findByEmail(loginRequest.getUserInput())
+                    .or(() -> userService.findByUsername(loginRequest.getUserInput()))
                     .orElseThrow(() -> new UsernameNotFoundException("Username or Email not found."));
 
             return ResponseEntity.ok().body(user);
@@ -76,13 +78,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Error occurred while attempting to login.");
         }
     }
-    private void attemptToAuthenticate(String email, String username, String password) {
-        if (email != null && userService.findByEmail(email).isPresent()) {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    private void attemptToAuthenticate(String userInput, String password) {
+        if (userInput != null && userService.findByEmail(userInput).isPresent()) {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userInput, password));
             return;
         }
 
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userInput, password));
     }
 
 }

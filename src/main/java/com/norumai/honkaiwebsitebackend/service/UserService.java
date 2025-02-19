@@ -1,5 +1,6 @@
 package com.norumai.honkaiwebsitebackend.service;
 
+import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
 import com.norumai.honkaiwebsitebackend.model.User;
 import com.norumai.honkaiwebsitebackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,15 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public User createUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public User createUser(RegisterRequest registerRequest) {
+        User user = new User();
+        user.setUsername(registerRequest.getUsername());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        if (registerRequest.getBio() != null) {
+            user.setBio(registerRequest.getBio());
+        }
+
         return userRepository.save(user);
     }
 
