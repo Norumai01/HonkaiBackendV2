@@ -2,6 +2,7 @@ package com.norumai.honkaiwebsitebackend.controller;
 
 import com.norumai.honkaiwebsitebackend.dto.LoginRequest;
 import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
+import com.norumai.honkaiwebsitebackend.service.JWTService;
 import com.norumai.honkaiwebsitebackend.service.UserService;
 import com.norumai.honkaiwebsitebackend.model.User;
 import jakarta.validation.Valid;
@@ -10,15 +11,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,6 +27,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JWTService jwtService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -69,7 +73,13 @@ public class AuthController {
                     .or(() -> userService.findByUsername(loginRequest.getUserInput()))
                     .orElseThrow(() -> new UsernameNotFoundException("Username or Email not found."));
 
-            return ResponseEntity.ok().body(user);
+            String jwtKey = jwtService.generateToken(user);
+
+            Map<String, Object> responses = new HashMap<>();
+            responses.put("token", jwtKey);
+            responses.put("user", user);
+
+            return ResponseEntity.ok().body(responses);
         }
         catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials.");
