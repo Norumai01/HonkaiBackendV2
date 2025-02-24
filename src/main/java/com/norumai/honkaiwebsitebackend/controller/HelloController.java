@@ -28,6 +28,11 @@ public class HelloController {
 
     @GetMapping("/")
     public String hello(HttpServletRequest request) {
-        return "Hello World" + request.getSession().getId();
+        try {
+            return "Hello World" + request.getSession().getId();
+        }
+        catch (Exception e) {
+            return e.getMessage();
+        }
     }
 }

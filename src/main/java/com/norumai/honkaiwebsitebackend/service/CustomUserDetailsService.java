@@ -21,6 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    // UserDetails is overrided to use User's email information.
     @Override
     public UserDetails loadUserByUsername(String loginInput) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(loginInput)

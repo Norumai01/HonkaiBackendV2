@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,6 +74,7 @@ public class AuthController {
                     .or(() -> userService.findByUsername(loginRequest.getUserInput()))
                     .orElseThrow(() -> new UsernameNotFoundException("Username or Email not found."));
 
+            // User's Token (Identity) for accessing API Requests.
             String jwtKey = jwtService.generateToken(user);
 
             Map<String, Object> responses = new HashMap<>();
