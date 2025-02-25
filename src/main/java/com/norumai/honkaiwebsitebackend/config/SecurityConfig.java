@@ -2,6 +2,8 @@ package com.norumai.honkaiwebsitebackend.config;
 
 import com.norumai.honkaiwebsitebackend.service.CustomUserDetailsService;
 import com.norumai.honkaiwebsitebackend.util.JwtFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
     private final CorsConfig corsConfig;
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Autowired
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtFilter jwtFilter, CorsConfig corsConfig) {
@@ -39,6 +42,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("Initializing security filter chain...");
         http
                 .cors(cors -> cors.configurationSource(corsConfig.corsConfiguration()))
                 .csrf(csrf -> csrf.disable())
@@ -51,13 +55,13 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-
+        logger.info("Security filter chain complete.");
         return http.build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
+        logger.info("Initializing custom authentication provider...");
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());

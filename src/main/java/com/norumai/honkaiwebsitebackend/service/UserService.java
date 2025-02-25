@@ -3,6 +3,8 @@ package com.norumai.honkaiwebsitebackend.service;
 import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
 import com.norumai.honkaiwebsitebackend.model.User;
 import com.norumai.honkaiwebsitebackend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,8 +16,8 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
+    private final static Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -28,15 +30,13 @@ public class UserService {
     }
 
     public Optional<User> findByUsername(String username) {
+        logger.debug("Finding user with username: {}...", username);
         return userRepository.findByUsername(username);
     }
 
     public Optional<User> findByEmail(String email) {
+        logger.debug("Finding user with email: {}...", email);
         return userRepository.findByEmail(email);
-    }
-
-    public Optional<User> getUserbyId(Long userId) {
-        return userRepository.findById(userId);
     }
 
     public User createUser(RegisterRequest registerRequest) {
@@ -48,6 +48,7 @@ public class UserService {
             user.setBio(registerRequest.getBio());
         }
 
+        logger.info("User created successfully for: {}.", user.getUsername());
         return userRepository.save(user);
     }
 

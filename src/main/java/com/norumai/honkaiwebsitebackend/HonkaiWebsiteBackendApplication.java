@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 
@@ -22,6 +21,7 @@ public class HonkaiWebsiteBackendApplication {
         // Set environment variables
         System.setProperty("MYSQL_USER", dotenv.get("MYSQL_USER"));
         System.setProperty("MYSQL_PASSWORD", dotenv.get("MYSQL_PASSWORD"));
+        System.setProperty("CORS_ALLOWED_ORIGIN", dotenv.get("CORS_ALLOWED_ORIGIN"));
 
         logger.info("Application starting...");
         SpringApplication.run(HonkaiWebsiteBackendApplication.class, args);

@@ -25,8 +25,9 @@
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.springframework.security" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    <!--  Change to DEBUG, then TRACE for debugging.  -->
+    <logger name="org.hibernate.SQL" level="ERROR"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="ERROR"/>
 
     <root level="INFO">
         <appender-ref ref="console"/>

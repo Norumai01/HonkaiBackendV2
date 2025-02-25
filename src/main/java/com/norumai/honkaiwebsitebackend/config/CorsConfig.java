@@ -1,5 +1,7 @@
 package com.norumai.honkaiwebsitebackend.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -14,11 +16,16 @@ public class CorsConfig {
     // https://www.geeksforgeeks.org/spring-security-cors-configuration/
     // https://docs.spring.io/spring-security/reference/reactive/integrations/cors.html
 
+    private static final Logger logger = LoggerFactory.getLogger(CorsConfig.class);
+
     @Bean
     public CorsConfigurationSource corsConfiguration() {
+        String allowedOrigin = System.getenv("CORS_ALLOWED_ORIGIN");
+
+        logger.info("Configuring CORS setting...");
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin(allowedOrigin);
         config.setAllowedHeaders(List.of(
                 "Content-Type",          // For sending JSON/form data
                 "Authorization",
@@ -40,6 +47,8 @@ public class CorsConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
+        logger.info("CORS configured to allow origin at {}", allowedOrigin);
         return source;
     }
 }
