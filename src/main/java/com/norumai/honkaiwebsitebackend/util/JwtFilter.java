@@ -19,11 +19,15 @@ import java.io.IOException;
 @Component
 public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter verifies once, good for token bearer like JWT.
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
+
+    private final JWTService jwtService;
 
     @Autowired
-    private JWTService jwtService;
+    public JwtFilter(CustomUserDetailsService userDetailsService, JWTService jwtService) {
+        this.userDetailsService = userDetailsService;
+        this.jwtService = jwtService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

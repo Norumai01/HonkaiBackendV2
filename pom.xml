@@ -108,6 +108,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!--    Slf4j Logger    -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+
     </dependencies>
 
     <build>
