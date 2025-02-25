@@ -36,7 +36,7 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        logger.warn("Processed request authentication header: {}.", authHeader != null ? "Authorization" : "Null");
+        logger.debug("Processed request authentication header: {}.", authHeader != null ? "Authorization" : "Null");
 
         String token = null;
         String email = null;
