@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,17 +54,42 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/createUser")
-    public ResponseEntity<?> createUser(@Valid @RequestBody RegisterRequest registerRequest) {
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registerUser(@Valid
+            @RequestParam("username") String username,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam(value = "bio", required = false) String bio) {
         try {
-            if (userService.findByEmail(registerRequest.getEmail()).isPresent()) {
-                logger.warn("User with email: {} already exists.", registerRequest.getEmail());
-                return ResponseEntity.badRequest().body("User with this email already exists.");
+            // Validate Inputs
+            if (username == null || username.trim().isEmpty()) {
+                logger.warn("Username must be provided");
+                return ResponseEntity.badRequest().body("Username must be provided");
             }
-            if (userService.findByUsername(registerRequest.getUsername()).isPresent()) {
-                logger.warn("User with username: {} already exists.", registerRequest.getUsername());
-                return ResponseEntity.badRequest().body("User with this username already exists.");
+            if (email == null || email.trim().isEmpty()) {
+                logger.warn("Email must be provided");
+                return ResponseEntity.badRequest().body("Email must be provided");
             }
+            if (password == null || password.trim().isEmpty()) {
+                logger.warn("Password must be provided");
+                return ResponseEntity.badRequest().body("Password must be provided");
+            }
+
+            // Identify matching username or email.
+            if (userService.findByUsername(username).isPresent()) {
+                logger.warn("User with username: {} already exists.", username);
+                return ResponseEntity.badRequest().body("User with username already exists.");
+            }
+            if (userService.findByEmail(email).isPresent()) {
+                logger.warn("User with email: {} already exists.", email);
+                return ResponseEntity.badRequest().body("User with email already exists.");
+            }
+
+            RegisterRequest registerRequest = new RegisterRequest();
+            registerRequest.setUsername(username);
+            registerRequest.setEmail(email);
+            registerRequest.setPassword(password);
+            registerRequest.setBio(bio);
 
             User savedUser = userService.createUser(registerRequest);
             logger.info("Created user for {}.", savedUser.getUsername());
