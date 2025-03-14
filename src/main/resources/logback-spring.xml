@@ -38,6 +38,7 @@
     <logger name="com.norumai.honkaiwebsitebackend.service.JWTService" level="DEBUG"/>
     <logger name="com.norumai.honkaiwebsitebackend.service.CustomUserDetailsService" level="DEBUG"/>
     <logger name="com.norumai.honkaiwebsitebackend.config.SecurityConfig" level="INFO"/>
+    <logger name="com.norumai.honkaiwebsitebackend.config.LettuceRedisConfig" level="INFO"/>
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.springframework.security" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>

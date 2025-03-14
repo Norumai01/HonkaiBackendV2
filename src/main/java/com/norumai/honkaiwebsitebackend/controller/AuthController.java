@@ -5,7 +5,7 @@ import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
 import com.norumai.honkaiwebsitebackend.service.JWTService;
 import com.norumai.honkaiwebsitebackend.service.UserService;
 import com.norumai.honkaiwebsitebackend.model.User;
-import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +141,28 @@ public class AuthController {
         }
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userInput, password));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+
+                // Add token to Redis service to be blacklisted.
+
+                logger.info("Bearer token: {}", token); // Testing
+            }
+
+            logger.info("Successfully logged out.");
+            return ResponseEntity.ok().body("Logged out successfully.");
+        }
+        catch (Exception e) {
+            logger.error("Error logging out.", e);
+            return ResponseEntity.badRequest().body("Error occurred while attempting to logout.");
+        }
     }
 
 }
