@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
+// Documentation: https://sunitc.dev/2018/04/15/redis-java-clients-lettuce/
+
 public class Jackson2JsonRedisCodec<K, V> implements RedisCodec<K, V> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Class<K> keyClass;

@@ -1,5 +1,6 @@
 package com.norumai.honkaiwebsitebackend.util;
 
+import com.norumai.honkaiwebsitebackend.service.BlacklistTokenService;
 import com.norumai.honkaiwebsitebackend.service.CustomUserDetailsService;
 import com.norumai.honkaiwebsitebackend.service.JWTService;
 import jakarta.servlet.FilterChain;
@@ -23,12 +24,14 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
 
     private final CustomUserDetailsService userDetailsService;
     private final JWTService jwtService;
+    private final BlacklistTokenService blacklistTokenService;
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
     @Autowired
-    public JwtFilter(CustomUserDetailsService userDetailsService, JWTService jwtService) {
+    public JwtFilter(CustomUserDetailsService userDetailsService, JWTService jwtService, BlacklistTokenService blacklistTokenService) {
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
+        this.blacklistTokenService = blacklistTokenService;
     }
 
     @Override
@@ -50,6 +53,13 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
             if (!token.contains(".") || token.split("\\.").length != 3) {
                 logger.error("Invalid JWT format detected: {}.", token);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT format");
+                return;
+            }
+
+            // Check if the current token is blacklisted.
+            if (blacklistTokenService.isTokenBlacklisted(token)) {
+                logger.warn("Blacklisted token detected.");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Blacklisted token detected.");
                 return;
             }
 

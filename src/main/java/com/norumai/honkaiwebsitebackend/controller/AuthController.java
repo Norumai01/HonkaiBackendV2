@@ -2,6 +2,7 @@ package com.norumai.honkaiwebsitebackend.controller;
 
 import com.norumai.honkaiwebsitebackend.dto.LoginRequest;
 import com.norumai.honkaiwebsitebackend.dto.RegisterRequest;
+import com.norumai.honkaiwebsitebackend.service.BlacklistTokenService;
 import com.norumai.honkaiwebsitebackend.service.JWTService;
 import com.norumai.honkaiwebsitebackend.service.UserService;
 import com.norumai.honkaiwebsitebackend.model.User;
@@ -32,13 +33,15 @@ public class AuthController {
     private final UserService userService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final BlacklistTokenService blacklistTokenService;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
-    public AuthController(UserService userService, JWTService jwtService, AuthenticationManager authenticationManager) {
+    public AuthController(UserService userService, JWTService jwtService, AuthenticationManager authenticationManager, BlacklistTokenService blacklistTokenService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.blacklistTokenService = blacklistTokenService;
     }
 
     @GetMapping("/users")
@@ -150,10 +153,12 @@ public class AuthController {
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
+                String email = jwtService.extractEmail(token);
 
                 // Add token to Redis service to be blacklisted.
-
-                logger.info("Bearer token: {}", token); // Testing
+                blacklistTokenService.blacklistToken(token, email);
+                logger.info("Blacklisted token for the user, {}.", email);
+                logger.info("Blacklisted token: {}", token);
             }
 
             logger.info("Successfully logged out.");
