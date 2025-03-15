@@ -15,14 +15,15 @@
 ### Configuration
 - **SecurityConfig**: Configures Spring Security with JWT filter and authentication
 - **CorsConfig**: Handles Cross-Origin Resource Sharing for frontend-backend communication
-- **LettuceRedisConfig**: Redis configuration for token blacklisting (In-progress)
+- **LettuceRedisConfig**: Redis configuration for connecting/disconnecting the database and processing commands.
+- **RedisCodecConfig**: Redis configuration for allowing custom object/primitive data types to be stored in Redis.
 
 ### Authentication Flow
 1. User registers or logs in via `/auth/register` or `/auth/login` endpoints
 2. Upon successful authentication, a JWT token is generated with 2-hour expiration
 3. The token is sent to the client and used for subsequent requests
 4. The token is validated by the JwtFilter for protected routes
-5. Logout mechanism clears local storage and will blacklist tokens (In-progress)
+5. Logout mechanism clears local storage and will blacklist tokens 
 
 ### Security Features
 - Secure password storage with BCrypt encoding
@@ -44,7 +45,11 @@
 - **UserService**: Manages user-related operations (creation, retrieval)
 - **JWTService**: Handles JWT token generation, validation, and parsing
 - **CustomUserDetailsService**: Implements Spring Security's UserDetailsService for authentication
-- **BlacklistTokenService**: For managing revoked tokens (implementation in progress)
+- **BlacklistTokenService**: For managing revoked tokens
+
+### Utilities
+- **JWTFilter**: Every requests a user made, they are validated and verified through the this filter.
+- **Jackson2JSonRedisCodec**: A utility class for essentially storing any object/primitive data types inside Redis.
 
 ## Setup Requirements
 
