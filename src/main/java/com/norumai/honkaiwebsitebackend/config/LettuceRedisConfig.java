@@ -1,6 +1,6 @@
 package com.norumai.honkaiwebsitebackend.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.norumai.honkaiwebsitebackend.util.Jackson2JsonRedisCodec;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
@@ -8,6 +8,7 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +17,13 @@ import java.time.Duration;
 
 @Configuration
 public class LettuceRedisConfig {
-
     private static final Logger logger = LoggerFactory.getLogger(LettuceRedisConfig.class);
+
+    private final Jackson2JsonRedisCodec<String, Object> jackson2JsonRedisCodec;
+    @Autowired
+    public LettuceRedisConfig(Jackson2JsonRedisCodec<String, Object> jackson2JsonRedisCodec) {
+        this.jackson2JsonRedisCodec = jackson2JsonRedisCodec;
+    }
 
     @Value("${redis.host}")
     private String host;
@@ -62,13 +68,13 @@ public class LettuceRedisConfig {
     }
 
     @Bean(destroyMethod = "close")
-    public StatefulRedisConnection<String, String> redisConnection(RedisClient redisClient) {
+    public StatefulRedisConnection<String, Object> redisConnection(RedisClient redisClient) {
         logger.debug("Initializing connection to Redis database: {}", redisClient);
-        return redisClient.connect();
+        return redisClient.connect(jackson2JsonRedisCodec);
     }
 
     @Bean
-    public RedisCommands<String, String> redisCommands(StatefulRedisConnection<String, String> redisConnection) {
+    public RedisCommands<String, Object> redisCommands(StatefulRedisConnection<String, Object> redisConnection) {
         logger.info("Commands can be now executed to Redis database.");
         return redisConnection.sync();
     }

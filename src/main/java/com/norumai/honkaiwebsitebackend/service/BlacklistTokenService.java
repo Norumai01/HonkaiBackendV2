@@ -10,11 +10,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class BlacklistTokenService {
 
-    private final RedisCommands<String, String> redisCommands;
+    private final RedisCommands<String, Object> redisCommands;
     private final static Logger logger = LoggerFactory.getLogger(BlacklistTokenService.class);
 
     @Autowired
-    public BlacklistTokenService(RedisCommands<String, String> redisCommands) {
+    public BlacklistTokenService(RedisCommands<String, Object> redisCommands) {
         this.redisCommands = redisCommands;
     }
+
+    
 }
