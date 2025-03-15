@@ -6,7 +6,7 @@
 - **Spring Security**: For authentication and authorization
 - **JWT (JSON Web Token)**: For stateless authentication
 - **JPA/Hibernate**: For ORM and database interactions
-- **Redis**: For JWT token blacklisting (implementation in progress)
+- **Redis**: For JWT token blacklisting
 - **Lombok**: For reducing boilerplate code
 - **Bcrypt**: For password encryption
 
