@@ -33,3 +33,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SSL/TLS Certificates and keystores ###
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+*.cer
+*.crt
+*.key
+*.pem
+*.csr

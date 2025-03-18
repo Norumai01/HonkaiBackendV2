@@ -63,8 +63,51 @@
     - `redis.port`: Redis server port
     - `redis.username`: Redis username (if applicable)
     - `redis.password`: Redis password (if applicable)
-    - `redis.database`: Redis database index
-    - `redis.timeout`: Connection timeout in milliseconds
+    - `redis.database`: Redis database index (Default = 0)
+    - `redis.timeout`: Connection timeout in milliseconds (Default = 3000 milliseconds)
+- SSL/TLS Certificate Configuration for enabling HTTPS
+  - `SSL_KEYSTORE_PATH`: Keystore file location for SSL Certificate
+  - `SSL_KEYSTORE_PASSWORD`: Password of the SSL Certificate
+
+## Setting up HTTPS for Local Development
+
+To enable HTTPS for local development, follow these steps:
+
+**Install mkcert**
+  - For Windows: `choco install mkcert`
+  - For macOS: `brew install mkcert`
+  - For Linux: Check distribution-specific instructions
+
+**Set up the local CA and create certificates**
+```bash
+mkcert -install
+mkcert localhost 127.0.0.1 ::1
+```
+This will create two files: `localhost+2.pem` (certificate) and `localhost+2-key.pem` (private key)
+
+**Convert to PKCS12 format for Java**
+```bash
+openssl pkcs12 -export -in localhost+2.pem -inkey localhost+2-key.pem -out honkai-keystore.p12 -name honkai-ssl
+```
+When prompted, enter a password you'll remember
+
+**Move the keystore file to your resources directory**
+```bash
+mv honkai-keystore.p12 src/main/resources/
+```
+
+**Configure your environmental variables**
+```dotenv
+SSL_KEYSTORE_PATH=classpath:honkai-keystore.p12
+SSL_KEYSTORE_PASSWORD=your_password_here
+```
+
+### Frontend Configuration
+
+Update your frontend environment variables (if it hasn't been set already) to use the HTTPS URL:
+```dotenv
+VITE_API_URL=https://localhost:8443
+```
 
 ## Security Notes
 - Passwords are encoded with BCrypt before storage
@@ -72,6 +115,7 @@
 - The system supports login with either username or email
 - User roles determine access permissions
 - Token validation checks for expiration and user matching
+- HTTPS is enabled
 
 ## Logging
 The application uses SLF4J for comprehensive logging across all components, with different log levels for:

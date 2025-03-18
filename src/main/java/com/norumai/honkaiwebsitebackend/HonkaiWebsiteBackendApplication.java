@@ -31,6 +31,10 @@ public class HonkaiWebsiteBackendApplication {
         System.setProperty("REDIS_USER", dotenv.get("REDIS_USER"));
         System.setProperty("REDIS_PASSWORD", dotenv.get("REDIS_PASSWORD"));
 
+        // SSL/TLS Certificate and HTTPS
+        System.setProperty("SSL_KEYSTORE_PATH", dotenv.get("SSL_KEYSTORE_PATH"));
+        System.setProperty("SSL_KEYSTORE_PASSWORD", dotenv.get("SSL_KEYSTORE_PASSWORD"));
+
         logger.info("Application starting...");
         SpringApplication.run(HonkaiWebsiteBackendApplication.class, args);
     }
