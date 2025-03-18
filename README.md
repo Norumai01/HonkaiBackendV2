@@ -28,6 +28,9 @@
 ### Security Features
 - Secure password storage with BCrypt encoding
 - JWT-based authentication with token validation
+- HTTPS Enabled
+- JWT token is stored through cookie-based sessions.
+- Requests authorization is verified from cookies.
 - CORS configuration for secure cross-origin requests
 - Role-based access control (ADMIN and USER roles)
 - Protection against CSRF attacks (configuration ready for future implementation)
@@ -115,7 +118,6 @@ VITE_API_URL=https://localhost:8443
 - The system supports login with either username or email
 - User roles determine access permissions
 - Token validation checks for expiration and user matching
-- HTTPS is enabled
 
 ## Logging
 The application uses SLF4J for comprehensive logging across all components, with different log levels for:
@@ -125,6 +127,5 @@ The application uses SLF4J for comprehensive logging across all components, with
 - ERROR: Problems that need attention
 
 ## Future Implementations
-- Complete Redis token blacklisting for logout security
 - User profile updates and management
 - Creating and posting contents for social application

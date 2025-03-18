@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
         Cookie[] cookies = request.getCookies();
 
         // User whose are logged in, have cookies.
-        // TODO: Potential security flaw here, attacker striking if somehow obtain JWT token from cookie.
+        // TODO: Potential security flaw here, attacker striking if somehow obtain JWT token from cookie without being logged in.
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("jwt")) {
