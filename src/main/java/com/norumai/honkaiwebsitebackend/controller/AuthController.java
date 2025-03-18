@@ -158,7 +158,6 @@ public class AuthController {
                 // Add token to Redis service to be blacklisted.
                 blacklistTokenService.blacklistToken(token, email);
                 logger.info("Blacklisted token for the user, {}.", email);
-                logger.info("Blacklisted token: {}", token);
             }
 
             logger.info("Successfully logged out.");
