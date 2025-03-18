@@ -5,6 +5,7 @@ import com.norumai.honkaiwebsitebackend.service.CustomUserDetailsService;
 import com.norumai.honkaiwebsitebackend.service.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -43,12 +44,24 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
 
         String token = null;
         String email = null;
+        Cookie[] cookies = request.getCookies();
 
-        // Validate from "Bearer {token}"
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            logger.debug("Token received has been received.");
+        // User whose are logged in, have cookies.
+        // TODO: Potential security flaw here, attacker striking if somehow obtain JWT token from cookie.
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt")) {
+                    token = cookie.getValue();
+                    logger.debug("Token has been received from cookie.");
+                    break;
+                }
+            }
+        }
+        else {
+            logger.debug("No account or cookie found."); // Bypass filters
+        }
 
+        if (token != null) {
             // Valid JWT token is "{header}.{Payload}.{Signature}".
             if (!token.contains(".") || token.split("\\.").length != 3) {
                 logger.error("Invalid JWT format detected: {}.", token);

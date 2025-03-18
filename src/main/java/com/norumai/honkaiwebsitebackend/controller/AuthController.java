@@ -6,14 +6,13 @@ import com.norumai.honkaiwebsitebackend.service.BlacklistTokenService;
 import com.norumai.honkaiwebsitebackend.service.JWTService;
 import com.norumai.honkaiwebsitebackend.service.UserService;
 import com.norumai.honkaiwebsitebackend.model.User;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -120,12 +119,22 @@ public class AuthController {
             // User's Token (Identity) for accessing API Requests.
             String jwtKey = jwtService.generateToken(user);
 
+            // Securing User's token behind cookie.
+            ResponseCookie jwtCookie = ResponseCookie.from("jwt", jwtKey)
+                    .httpOnly(true) // Prevent XSS attacks.
+                    .secure(true) // Protect from being intercepted.
+                    .path("/")
+                    .maxAge(7200) // 2 hours
+                    .sameSite("None")
+                    .build();
+
             Map<String, Object> responses = new HashMap<>();
-            responses.put("token", jwtKey);
             responses.put("user", user);
 
             logger.info("Successfully logged in: {}.", user.getUsername());
-            return ResponseEntity.ok().body(responses);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(responses);
         }
         catch (AuthenticationException e) {
             logger.error("Invalid credentials provided for: {}.", loginRequest.getUserInput());
@@ -149,19 +158,31 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         try {
-            String authHeader = request.getHeader("Authorization");
+            ResponseCookie clearCookie = ResponseCookie.from("jwt","")
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(0) // Clear the cookie.
+                    .sameSite("None")
+                    .build();
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                String email = jwtService.extractEmail(token);
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt")) {
+                    String token = cookie.getValue();
+                    String email = jwtService.extractEmail(token);
 
-                // Add token to Redis service to be blacklisted.
-                blacklistTokenService.blacklistToken(token, email);
-                logger.info("Blacklisted token for the user, {}.", email);
+                    // Add token to Redis service to be blacklisted.
+                    blacklistTokenService.blacklistToken(token, email);
+                    logger.info("Blacklisted token for the user: {}.", email);
+                    break;
+                }
             }
 
             logger.info("Successfully logged out.");
-            return ResponseEntity.ok().body("Logged out successfully.");
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, clearCookie.toString())
+                    .body("Logged out successfully.");
         }
         catch (Exception e) {
             logger.error("Error logging out.", e);
