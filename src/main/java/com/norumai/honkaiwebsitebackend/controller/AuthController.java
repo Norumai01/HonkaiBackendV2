@@ -35,6 +35,9 @@ public class AuthController {
     private final BlacklistTokenService blacklistTokenService;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
+    private static final String GENERIC_AUTH_ERROR = "Authentication failed. Please try again later.";
+    private static final String GENERIC_REGISTRATION_ERROR = "Registration could not be completed. Please try again later.";
+
     @Autowired
     public AuthController(UserService userService, JWTService jwtService, AuthenticationManager authenticationManager, BlacklistTokenService blacklistTokenService) {
         this.userService = userService;
@@ -43,6 +46,7 @@ public class AuthController {
         this.blacklistTokenService = blacklistTokenService;
     }
 
+    // May delete this later, feel unnecessary.
     @GetMapping("/users")
     public ResponseEntity<?> getAllUsers() {
         try {
@@ -64,27 +68,17 @@ public class AuthController {
             @RequestParam(value = "bio", required = false) String bio) {
         try {
             // Validate Inputs
-            if (username == null || username.trim().isEmpty()) {
-                logger.warn("Username must be provided");
-                return ResponseEntity.badRequest().body("Username must be provided");
-            }
-            if (email == null || email.trim().isEmpty()) {
-                logger.warn("Email must be provided");
-                return ResponseEntity.badRequest().body("Email must be provided");
-            }
-            if (password == null || password.trim().isEmpty()) {
-                logger.warn("Password must be provided");
-                return ResponseEntity.badRequest().body("Password must be provided");
+            if (username == null || username.trim().isEmpty() ||
+                    email == null || email.trim().isEmpty() ||
+                    password == null || password.trim().isEmpty()) {
+                logger.warn("Missing required registration fields");
+                return ResponseEntity.badRequest().body("All required fields must be provided");
             }
 
             // Identify matching username or email.
-            if (userService.findByUsername(username).isPresent()) {
-                logger.warn("User with username: {} already exists.", username);
-                return ResponseEntity.badRequest().body("User with username already exists.");
-            }
-            if (userService.findByEmail(email).isPresent()) {
-                logger.warn("User with email: {} already exists.", email);
-                return ResponseEntity.badRequest().body("User with email already exists.");
+            if (userService.findByUsername(username).isPresent() || userService.findByEmail(email).isPresent()) {
+                logger.warn("Registration attempt with existing credentials");
+                return ResponseEntity.badRequest().body("Registration failed. Please try with different credentials.");
             }
 
             RegisterRequest registerRequest = new RegisterRequest();
@@ -94,12 +88,13 @@ public class AuthController {
             registerRequest.setBio(bio);
 
             User savedUser = userService.createUser(registerRequest);
-            logger.info("Created user for {}.", savedUser.getUsername());
+            logger.info("Created a new user.");
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         }
         catch (Exception e) {
-            logger.error("Error creating user.", e);
-            return ResponseEntity.badRequest().body("Error occurred while creating user.");
+            logger.error("User registration error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GENERIC_REGISTRATION_ERROR);
         }
     }
 
@@ -112,8 +107,8 @@ public class AuthController {
             User user = userService.findByEmail(loginRequest.getUserInput())
                     .or(() -> userService.findByUsername(loginRequest.getUserInput()))
                     .orElseThrow(() -> {
-                        logger.warn("User with email: {} not found.", loginRequest.getUserInput());
-                        return new UsernameNotFoundException("Username or Email not found.");
+                        logger.warn("User with inputted email is not found.");
+                        return new UsernameNotFoundException("Credentials not found.");
                     });
 
             // User's Token (Identity) for accessing API Requests.
@@ -131,22 +126,22 @@ public class AuthController {
             Map<String, Object> responses = new HashMap<>();
             responses.put("user", user);
 
-            logger.info("Successfully logged in: {}.", user.getUsername());
+            logger.info("Successfully logged in.");
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                     .body(responses);
         }
         catch (AuthenticationException e) {
-            logger.error("Invalid credentials provided for: {}.", loginRequest.getUserInput());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials.");
+            logger.error("Authentication failed: Invalid credentials or account not found.\n", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials or account not found.");
         }
         catch (Exception e) {
-            logger.error("Error logging in for user: " + loginRequest.getUserInput(), e);
-            return ResponseEntity.badRequest().body("Error occurred while attempting to login.");
+            logger.error("Authentication failed: ", e);
+            return ResponseEntity.badRequest().body(GENERIC_AUTH_ERROR);
         }
     }
     private void attemptToAuthenticate(String userInput, String password) {
-        logger.warn("Attempting to authenticate: {}...", userInput);
+        logger.debug("Authentication attempt received");
         if (userInput != null && userService.findByEmail(userInput).isPresent()) {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userInput, password));
             return;
@@ -174,7 +169,7 @@ public class AuthController {
 
                     // Add token to Redis service to be blacklisted.
                     blacklistTokenService.blacklistToken(token, email);
-                    logger.info("Blacklisted token for the user: {}.", email);
+                    logger.info("Successfully blacklisted the current token for the user.");
                     break;
                 }
             }
@@ -185,8 +180,9 @@ public class AuthController {
                     .body("Logged out successfully.");
         }
         catch (Exception e) {
-            logger.error("Error logging out.", e);
-            return ResponseEntity.badRequest().body("Error occurred while attempting to logout.");
+            logger.error("Logout error", e);
+            // For ensuring secured details, return 200 regardless whether user is logged out or not.
+            return ResponseEntity.ok().body("Logged out successfully.");
         }
     }
 

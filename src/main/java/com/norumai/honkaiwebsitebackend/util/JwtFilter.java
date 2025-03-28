@@ -58,13 +58,14 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
             }
         }
         else {
-            logger.debug("No account or cookie found."); // Bypass filters
+            // If no account found, no need to authenticate because no account found.
+            logger.debug("No account or cookie found.");
         }
 
         if (token != null) {
             // Valid JWT token is "{header}.{Payload}.{Signature}".
             if (!token.contains(".") || token.split("\\.").length != 3) {
-                logger.error("Invalid JWT format detected: {}.", token);
+                logger.error("Invalid JWT format detected.");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT format");
                 return;
             }
@@ -78,10 +79,10 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
 
             try {
                 email = jwtService.extractEmail(token);
-                logger.debug("Token's Email found: {}.", email);
+                logger.debug("Token of the email has been found.");
             }
             catch (Exception e) {
-                logger.error("Invalid JWT Token detected: {}.", token);
+                logger.error("JWT Token cannot be identified.");
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid JWT Token");
                 return;
             }
@@ -92,14 +93,14 @@ public class JwtFilter extends OncePerRequestFilter { // OncePerRequestFilter ve
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtService.validateToken(token, userDetails)) {
-                logger.info("Token successfully validated for: {}.", userDetails.getUsername());
+                logger.info("Token successfully validated for the email.");
                 UsernamePasswordAuthenticationToken userPassAuthToken = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 userPassAuthToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(userPassAuthToken);
             }
             else {
-                logger.error("Token validation failed for user: {}.", userDetails.getUsername());
+                logger.error("Token validation failed.");
             }
         }
 

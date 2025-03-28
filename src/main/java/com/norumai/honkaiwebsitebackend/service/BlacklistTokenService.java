@@ -24,7 +24,7 @@ public class BlacklistTokenService {
     public void blacklistToken(String token, String email) {
         String hashedToken = hashToken(token);
         String keyName = "jwt-blacklist:" + hashedToken;
-        logger.debug("Blacklisting token for the user, {}...", email);
+        logger.debug("Blacklisting the token of the current user...");
         redisCommands.setex(keyName, 7200, email); // Expires in 2 hours.
     }
 

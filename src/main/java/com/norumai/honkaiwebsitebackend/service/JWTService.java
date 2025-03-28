@@ -80,20 +80,20 @@ public class JWTService {
 
 
             if (!email.equals(userDetails.getUsername())) {
-                logger.warn("Token's and User's email do not match.");
+                logger.warn("Token validation failed");
                 return false;
             }
 
             if (isTokenExpired(token)) {
-                logger.warn("Token expired for: {}.", userDetails.getUsername());
+                logger.warn("Token expired");
                 return false;
             }
 
-            logger.info("Token successfully validated for: {}.", userDetails.getUsername());
+            logger.info("Token successfully validated");
             return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
         }
         catch (Exception e) {
-            logger.error("Error validating token: {}.", token, e);
+            logger.error("Error during token validation", e);
             return false;
         }
     }

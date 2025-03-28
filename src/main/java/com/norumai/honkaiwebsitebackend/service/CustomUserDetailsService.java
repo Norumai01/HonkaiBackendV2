@@ -27,14 +27,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     // UserDetails is overrided to use User's email information.
     @Override
     public UserDetails loadUserByUsername(String loginInput) throws UsernameNotFoundException {
-        logger.debug("Attempting to load user details for {}...", loginInput);
+        logger.debug("Attempting to load current inputted user details...");
 
         try {
             User user = userRepository.findByEmail(loginInput)
                     .or(() -> userRepository.findByUsername(loginInput))
                     .orElseThrow(() -> {
-                        logger.warn("Failed login attempt - user not found: {}.", loginInput);
-                        return new UsernameNotFoundException("User not found with email or username: " + loginInput);
+                        logger.warn("Custom User Service - Invalid Credentials.");
+                        return new UsernameNotFoundException("Invalid Credentials.");
                     });
 
             logger.info("User details loaded successfully for: {}.", loginInput);
@@ -45,8 +45,8 @@ public class CustomUserDetailsService implements UserDetailsService {
             );
         }
         catch (Exception e) {
-            logger.error("Unexpected error loading user: {}.", loginInput, e);
-            throw new UsernameNotFoundException("Error loading user: " + loginInput);
+            logger.error("Custom User Service - Unexpected error loading user.\n", e);
+            throw new UsernameNotFoundException("Error has occurred loading user.");
         }
     }
 }
