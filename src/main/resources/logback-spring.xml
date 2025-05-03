@@ -40,6 +40,7 @@
     <logger name="com.norumai.honkaiwebsitebackend.config.SecurityConfig" level="INFO"/>
     <logger name="com.norumai.honkaiwebsitebackend.config.LettuceRedisConfig" level="INFO"/>
     <logger name="com.norumai.honkaiwebsitebackend.util.Jackson2JsonRedisCodec" level="DEBUG"/>
+    <logger name="com.norumai.honkaiwebsitebackend.service.BlacklistTokenService" level="DEBUG"/>
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.springframework.security" level="INFO"/>
     <logger name="org.hibernate" level="WARN"/>
