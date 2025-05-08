@@ -6,11 +6,11 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven -- Tests
+name: Unit Testing
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ "main", "dev" ]
   pull_request:
     branches: [ "main" ]
 

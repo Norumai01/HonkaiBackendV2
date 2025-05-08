@@ -9,6 +9,9 @@
 - **Redis**: For JWT token blacklisting
 - **Lombok**: For reducing boilerplate code
 - **Bcrypt**: For password encryption
+- **H2 Database**: In-memory database for unit testing
+- **GitHub Actions**: Continuous Integration for automated testing
+
 
 ## Project Structure
 
@@ -53,6 +56,71 @@
 ### Utilities
 - **JWTFilter**: Every requests a user made, they are validated and verified through the this filter.
 - **Jackson2JSonRedisCodec**: A utility class for essentially storing any object/primitive data types inside Redis.
+
+## Running Unit Tests
+
+### Prerequisites for Testing
+⚠️ **Important**: Redis must be running before executing tests that involve authentication or JWT token operations.
+
+### Starting Redis for Tests
+You have several options to run Redis:
+
+1. **Using Docker (Recommended)**:
+   ```bash
+   docker run -d -p 6379:6379 redis:7-alpine
+   ```
+
+2. **Using Local Installation**:
+  - For macOS: `brew services start redis`
+  - For Ubuntu/Debian: `sudo systemctl start redis-server`
+  - For Windows: Start Redis service from Services panel
+
+### Running Tests
+
+#### Command Line
+```bash
+# Run all tests
+mvn test
+
+# Run tests with specific profile
+mvn test -Dspring.profiles.active=test
+
+# Run a specific test class
+mvn test -Dtest=UserServiceTest
+
+# Run tests with detailed output
+mvn test -X
+```
+
+#### IntelliJ IDEA
+1. Right-click on the test class or method
+2. Select "Run 'TestClassName'" or "Run 'testMethodName()'"
+3. Ensure Redis is running before executing tests
+
+### Test Configuration
+The application uses `application-test.properties` for test configuration:
+- H2 in-memory database for data persistence tests
+- Mock Redis configuration for JWT blacklist testing
+- Test-specific security settings
+
+To ensure your tests use the test profile, add the following annotation to your test classes:
+```java
+@SpringBootTest
+@ActiveProfiles("test")
+public class YourTestClass {
+    // test methods
+}
+```
+
+### Continuous Integration
+This project uses GitHub Actions for automated testing. The workflow:
+- Triggers on the main and dev branch pushes and all pull requests to the main
+- Sets up Java 21 environment
+- Starts a Redis service container
+- Runs all unit tests with the test profile
+- Provides test results in the GitHub Actions tab
+
+The CI configuration can be found in `.github/workflows/maven.yml`.
 
 ## Setup Requirements
 
